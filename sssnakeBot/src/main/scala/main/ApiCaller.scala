@@ -8,7 +8,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import org.apache.http.client.methods.{HttpUriRequest, RequestBuilder}
 import org.apache.http.client.utils.URIBuilder
-import org.apache.http.impl.client.HttpClients
+import org.apache.http.impl.client.HttpClientBuilder
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 
@@ -29,18 +29,20 @@ abstract class ApiCaller (credentialsPath: String, host: String) {
     def buildRequest(endpoint:String, scheme:String = "https", params: Map[String, String] = Map()): HttpUriRequest
 
     def getRestContent(request: HttpUriRequest): String = {
-        val httpClient = HttpClients.createDefault
+        val httpClient = HttpClientBuilder.create().build()
 
 
         val httpResponse = httpClient.execute(request)
+
         val entity = httpResponse.getEntity
         var content = ""
         if (entity != null) {
             val inputStream = entity.getContent
             content = io.Source.fromInputStream(inputStream).getLines.mkString
+
             inputStream.close
         }
-        httpClient.getConnectionManager.shutdown
+        httpClient.close()
         content
     }
 

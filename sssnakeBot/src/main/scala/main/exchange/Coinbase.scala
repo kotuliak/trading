@@ -40,4 +40,5 @@ class Coinbase(credentialsPath: String, host: String) extends ApiCaller (credent
         )
         headers
     }
+
 }

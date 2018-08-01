@@ -54,5 +54,4 @@ class Binance(credentialsPath: String, host: String) extends ApiCaller (credenti
         )
         headers
     }
-
 }
