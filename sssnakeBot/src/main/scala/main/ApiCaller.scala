@@ -1,3 +1,5 @@
+package main
+
 import java.io.{File, FileInputStream}
 import java.net.URI
 import java.util.Base64
@@ -9,23 +11,24 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClients
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
-import scala.collection.mutable.ListBuffer
+
 import scala.beans.BeanProperty
 
-class ApiCaller (credentialsPath: String, url: String) {
+abstract class ApiCaller (credentialsPath: String, host: String) {
 
     val input = new FileInputStream(new File(credentialsPath))
     val yaml = new Yaml(new Constructor(classOf[Credentials]))
     val credentials = yaml.load(input).asInstanceOf[Credentials]
 
 
-    def buildUri(scheme:String, host: String, endpoint:String, params: Map[String, String] = Map()): URI = {
+    def buildUri(endpoint:String, scheme:String = "https", params: Map[String, String] = Map()): URI = {
         var uri = new URIBuilder()
             .setScheme(scheme)
             .setHost(host)
             .setPath(endpoint)
         params.map(m => uri.addParameter(m._1,m._2))
 
+        println(host)
         println(uri.getPath)
         uri.build()
     }
