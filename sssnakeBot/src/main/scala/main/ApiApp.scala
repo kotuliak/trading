@@ -3,7 +3,7 @@ package main
 import exchange.{Binance, Coinbase}
 
 object ApiApp extends App {
-    val coinbase = new Binance
+    val coinbase = new Coinbase
 
     val uri = coinbase.buildUri("accounts")
     println(uri.toString)
@@ -11,7 +11,7 @@ object ApiApp extends App {
 
     println(coinbase.getRestContent(uri, headers))
 
-//    val binance = new Coinbase
+//    val binance = new Binance
 //
 //    val uri2 = binance.buildUri("/api/v3/account")
 //    println(uri2.toString)
