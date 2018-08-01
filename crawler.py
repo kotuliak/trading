@@ -57,6 +57,7 @@ while (d > 1504224000):
         for data in item:
             if (i == 0):
                 ds.append(datetime.datetime.fromtimestamp(data).strftime('%Y-%m-%dT%H:%M:%S+00:00'))
+                ds.append(str(data % 86400))
             else:
                 ds.append(str(data))
             i += 1
@@ -77,6 +78,7 @@ for item in json:
     for data in item:
         if (i == 0):
             ds.append(datetime.datetime.fromtimestamp(data).strftime('%Y-%m-%dT%H:%M:%S+00:00'))
+            ds.append(str(data % 86400))
         else:
             ds.append(str(data))
         i += 1

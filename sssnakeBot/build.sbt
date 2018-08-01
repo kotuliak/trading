@@ -20,3 +20,5 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-stream" % "2.5.14",
     "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.14" % Test
 )
+
+libraryDependencies ++= Seq("org.yaml" % "snakeyaml" % "1.19")

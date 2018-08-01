@@ -1,3 +1,5 @@
 **/sssnakeBot/project
 **/sssnakeBot/target
 **/sssnakeBot/.idea
+*_credentials.yml
+**/.DS_Store

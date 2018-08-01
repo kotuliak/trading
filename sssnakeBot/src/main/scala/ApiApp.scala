@@ -1,5 +1,7 @@
+
+
 object ApiApp extends App {
-    val apiCaller = new ApiCaller
+    val apiCaller = new ApiCaller("src/main/config/coinbase_credentials.yml", "https://api.pro.coinbase.com/")
 
     val uri = apiCaller.buildUri("https", "api.pro.coinbase.com", "accounts")
     println(uri.toString)

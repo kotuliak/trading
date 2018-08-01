@@ -1,3 +1,4 @@
+import java.io.{File, FileInputStream}
 import java.net.URI
 import java.util.Base64
 
@@ -6,14 +7,17 @@ import javax.crypto.spec.SecretKeySpec
 import org.apache.http.client.methods.RequestBuilder
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClients
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+import scala.collection.mutable.ListBuffer
+import scala.beans.BeanProperty
 
-class ApiCaller {
+class ApiCaller (credentialsPath: String, url: String) {
 
-    val KEY = "1e85e9d76f1ce7bbfe9f598b583f551b"
-    val SECRET = "l1MY2cRklE3XuHIOXTAiifOMJM7chvGoa2EO3laB03zMTSd/vHluuRhIVZTFZNiMSJTrKc0PJ2qQr0TAsbpcLg=="
-    val PASS = "LauncherDragon123!"
+    val input = new FileInputStream(new File(credentialsPath))
+    val yaml = new Yaml(new Constructor(classOf[Credentials]))
+    val credentials = yaml.load(input).asInstanceOf[Credentials]
 
-    val url = "https://api.pro.coinbase.com/"
 
     def buildUri(scheme:String, host: String, endpoint:String, params: Map[String, String] = Map()): URI = {
         var uri = new URIBuilder()
@@ -52,7 +56,7 @@ class ApiCaller {
         println(message)
 
         val sha256_HMAC = Mac.getInstance("HmacSHA256")
-        val secretKey = new SecretKeySpec(Base64.getDecoder.decode(SECRET), "HmacSHA256")
+        val secretKey = new SecretKeySpec(Base64.getDecoder.decode(credentials.secret), "HmacSHA256")
         sha256_HMAC.init(secretKey)
 
         val hash = Base64.getEncoder.encodeToString(sha256_HMAC.doFinal(message.getBytes()))
@@ -62,11 +66,17 @@ class ApiCaller {
         var headers = Map(
             "CB-ACCESS-SIGN" -> hash,
             "CB-ACCESS-TIMESTAMP" -> timestamp.toString,
-            "CB-ACCESS-KEY" -> KEY,
-            "CB-ACCESS-PASSPHRASE" -> PASS,
+            "CB-ACCESS-KEY" -> credentials.key,
+            "CB-ACCESS-PASSPHRASE" -> credentials.pass,
             "Content-Type" -> "application/json"
         )
         headers
     }
 
+}
+
+class Credentials {
+    @BeanProperty var key: String = ""
+    @BeanProperty var secret: String = ""
+    @BeanProperty var pass: String = ""
 }
