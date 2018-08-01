@@ -6,7 +6,7 @@ import java.util.Base64
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.client.methods.{HttpUriRequest, RequestBuilder}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClients
 import org.yaml.snakeyaml.Yaml
@@ -20,27 +20,19 @@ abstract class ApiCaller (credentialsPath: String, host: String) {
     val yaml = new Yaml(new Constructor(classOf[Credentials]))
     val credentials = yaml.load(input).asInstanceOf[Credentials]
 
+    var timestamp: String = ""
 
-    def buildUri(endpoint:String, scheme:String = "https", params: Map[String, String] = Map()): URI = {
-        var uri = new URIBuilder()
-            .setScheme(scheme)
-            .setHost(host)
-            .setPath(endpoint)
-        params.map(m => uri.addParameter(m._1,m._2))
-
-        println(host)
-        println(uri.getPath)
-        uri.build()
+    def setTimestamp(): Unit = {
+        timestamp = "%.2f".format(System.currentTimeMillis() / 1000.0)
     }
 
-    def getRestContent(uri: URI, headers: Map[String, String] = Map()): String = {
+    def buildRequest(endpoint:String, scheme:String = "https", params: Map[String, String] = Map()): HttpUriRequest
+
+    def getRestContent(request: HttpUriRequest): String = {
         val httpClient = HttpClients.createDefault
-        val request = RequestBuilder.get()
-            .setUri(uri)
 
-        headers.map(h => request.setHeader(h._1, h._2))
 
-        val httpResponse = httpClient.execute(request.build)
+        val httpResponse = httpClient.execute(request)
         val entity = httpResponse.getEntity
         var content = ""
         if (entity != null) {
@@ -52,28 +44,14 @@ abstract class ApiCaller (credentialsPath: String, host: String) {
         content
     }
 
-    def sign(uri: URI): Map[String, String] = {
-        val timestamp = "%.2f".format(System.currentTimeMillis() / 1000.0)
-
-        val message = timestamp + "GET" + uri.getPath
-        println(message)
-
+    def sign(secret: Array[Byte], message: String): Array[Byte] = {
         val sha256_HMAC = Mac.getInstance("HmacSHA256")
-        val secretKey = new SecretKeySpec(Base64.getDecoder.decode(credentials.secret), "HmacSHA256")
+        val secretKey = new SecretKeySpec(secret, "HmacSHA256")
         sha256_HMAC.init(secretKey)
 
-        val hash = Base64.getEncoder.encodeToString(sha256_HMAC.doFinal(message.getBytes()))
+        val hash = sha256_HMAC.doFinal(message.getBytes)
 
-        println(hash)
-
-        var headers = Map(
-            "CB-ACCESS-SIGN" -> hash,
-            "CB-ACCESS-TIMESTAMP" -> timestamp.toString,
-            "CB-ACCESS-KEY" -> credentials.key,
-            "CB-ACCESS-PASSPHRASE" -> credentials.pass,
-            "Content-Type" -> "application/json"
-        )
-        headers
+        hash
     }
 
 }
